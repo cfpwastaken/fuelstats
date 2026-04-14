@@ -1,0 +1,23 @@
+{
+  "name": "fuelstats-job",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/pg": "^8.20.0",
+    "@types/pg-copy-streams": "^1.2.5",
+    "@types/split2": "^4.2.3",
+    "@types/through2": "^2.0.41"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "ora": "^9.0.0",
+    "pg": "^8.20.0",
+    "pg-copy-streams": "^7.0.0",
+    "simple-eta": "^3.0.2",
+    "split2": "^4.2.0",
+    "through2": "^4.0.2"
+  }
+}
