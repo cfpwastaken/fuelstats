@@ -34,7 +34,7 @@
 <ViolationDateSwitcher bind:illegalDate />
 <div class="flex flex-wrap gap-4">
 	{#if browser}
-		{#await fetch('api/violators').then((res) => res.json())}
+		{#await fetch(`api/violators?day=${illegalDate.toString()}`).then((res) => res.json())}
 			<span class="flex flex-1 items-center justify-center gap-2 text-lg">
 				<Spinner />
 				Laden...
@@ -44,7 +44,7 @@
 		{/await}
 	{/if}
 	{#if browser}
-		{#await fetch('api/violators/stations').then((res) => res.json())}
+		{#await fetch(`api/violators/stations?day=${illegalDate.toString()}`).then((res) => res.json())}
 			<span class="flex flex-1 items-center justify-center gap-2 text-lg">
 				<Spinner />
 				Laden...
