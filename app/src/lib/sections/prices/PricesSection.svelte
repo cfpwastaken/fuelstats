@@ -2,6 +2,7 @@
 	import SectionHeader from '$lib/SectionHeader.svelte';
 	import StatCard from '$lib/StatCard.svelte';
 	import type { DailyAggregation } from '$lib/types/DailyAggregations';
+	import DailyAverageGraph from './DailyAverageGraph.svelte';
 
 	type FuelKey = 'diesel' | 'e5' | 'e10';
 	type FuelMetric = 'avg' | 'min' | 'max' | 'median';
@@ -45,3 +46,4 @@
 	{@render card("Super Durchschnitt", "e5")}
 	{@render card("Super E10 Durchschnitt", "e10")}
 </div>
+<DailyAverageGraph />

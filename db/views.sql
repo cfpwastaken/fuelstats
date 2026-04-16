@@ -64,6 +64,42 @@ FROM history
 GROUP BY (date_trunc('year', "timestamp"))
 ORDER BY (date_trunc('year', "timestamp")) DESC;
 
+DROP MATERIALIZED VIEW IF EXISTS daily_average CASCADE;
+
+CREATE MATERIALIZED VIEW daily_average AS
+WITH ordered AS (
+	SELECT
+		station_uuid,
+		"timestamp",
+		diesel,
+		e5,
+		e10,
+		lead("timestamp") OVER (
+			PARTITION BY station_uuid
+			ORDER BY "timestamp"
+		) AS next_ts
+	FROM history
+	WHERE "timestamp" >= now() - interval '7 days'
+),
+minutes AS (
+	SELECT generate_series(
+		now() - interval '7 days',
+		now(),
+		interval '1 minutes'
+	) AS ts
+)
+SELECT
+	date_trunc('minute', m.ts)::time AS time,
+	avg(o.diesel) AS diesel_avg,
+	avg(o.e5) AS e5_avg,
+	avg(o.e10) AS e10_avg
+FROM minutes m
+JOIN ordered o
+  ON m.ts >= o."timestamp"
+ AND (m.ts < o.next_ts OR o.next_ts IS NULL)
+GROUP BY time
+ORDER BY time;
+
 --
 -- STATION STATISTICS
 --
