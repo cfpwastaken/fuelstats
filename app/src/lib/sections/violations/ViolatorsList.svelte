@@ -65,11 +65,12 @@
 				}).reduce((sum, v) => sum + parseFloat(v.total_fees), 0)
 	);
 
-	let violationType = $state<'high' | 'moderate' | 'low'>('high');
+	let violationType = $state<'high' | 'moderate' | 'low' | 'fee'>('high');
 	const VIOLATION_TYPES = {
 		high: 'Schwere Verstöße',
 		moderate: 'Moderate Verstöße',
-		low: 'Leichte Verstöße'
+		low: 'Leichte Verstöße',
+		fee: "Strafkosten"
 	};
 </script>
 
@@ -122,6 +123,11 @@
 								vDate.getDate() === props.date.day)
 						})
 						.sort((a, b) => {
+							if (violationType === 'fee') {
+								const aFees = parseFloat(a.total_fees);
+								const bFees = parseFloat(b.total_fees);
+								return bFees - aFees;
+							}
 							const aViolations = parseInt(a[`violations_${violationType}` as keyof typeof a]);
 							const bViolations = parseInt(b[`violations_${violationType}` as keyof typeof b]);
 							return bViolations - aViolations;
@@ -171,7 +177,20 @@
 								vDate.getMonth() + 1 === props.date.month &&
 								vDate.getDate() === props.date.day)
 						})
-						.filter((v) => v.severity === (violationType === 'high' ? 2 : violationType === 'moderate' ? 1 : 0))
+						.filter((v) => {
+							if (violationType === 'fee') {
+								return true;
+							}
+							return v.severity === (violationType === 'high' ? 2 : violationType === 'moderate' ? 1 : 0)
+						})
+						.sort((a, b) => {
+							if (violationType === 'fee') {
+								const aFees = parseFloat(a.total_fees);
+								const bFees = parseFloat(b.total_fees);
+								return bFees - aFees;
+							}
+							return 0;
+						})
 						.slice(0, 5) as violator, i (violator.station_uuid)}
 						<div class="flex flex-col">
 							<div class="flex items-center gap-4">
