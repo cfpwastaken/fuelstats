@@ -136,8 +136,8 @@
 				diesel_e5: { label: 'Diesel - Super', color: 'var(--chart-1)' },
 				e5_e10: { label: 'Super - Super E10', color: 'var(--chart-2)' },
 				...(showOil && {
-					crude_oil_diesel: { label: 'Rohöl - Diesel', color: 'var(--chart-3)' },
-					crude_oil_e5: { label: 'Rohöl - Super', color: 'var(--chart-4)' }
+					diesel_crude_oil: { label: 'Diesel - Rohöl', color: 'var(--chart-3)' },
+					e5_crude_oil: { label: 'Super - Rohöl', color: 'var(--chart-4)' }
 				})
 			}}
 			class="h-[calc(100%-10rem)] w-[calc(100%-2rem)] pl-2"
@@ -148,8 +148,8 @@
 						date: new Date(agg.day),
 						e5_diesel: parseFloat(agg.e5_avg) - parseFloat(agg.diesel_avg),
 						e5_e10: parseFloat(agg.e5_avg) - parseFloat(agg.e10_avg),
-						crude_oil_diesel: agg.crude_oil ? parseFloat(agg.crude_oil) - parseFloat(agg.diesel_avg) : null,
-						crude_oil_e5: agg.crude_oil ? parseFloat(agg.crude_oil) - parseFloat(agg.e5_avg) : null
+						diesel_crude_oil: agg.crude_oil ? parseFloat(agg.diesel_avg) - parseFloat(agg.crude_oil) : null,
+						e5_crude_oil: agg.crude_oil ? parseFloat(agg.e5_avg) - parseFloat(agg.crude_oil) : null
 					}))
 					.filter(
 						(d) =>
@@ -175,13 +175,13 @@
 					...(showOil
 						? [
 								{
-									key: 'crude_oil_diesel',
-									label: 'Rohöl - Diesel',
+									key: 'diesel_crude_oil',
+									label: 'Diesel - Rohöl',
 									color: 'var(--chart-3)'
 								},
 								{
-									key: 'crude_oil_e5',
-									label: 'Rohöl - Super',
+									key: 'e5_crude_oil',
+									label: 'Super - Rohöl',
 									color: 'var(--chart-4)'
 								}
 							]
