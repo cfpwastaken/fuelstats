@@ -1,17 +1,21 @@
 <script lang="ts">
 	import SingleCard from '$lib/SingleCard.svelte';
 	import { type Violation } from "$lib/types/Violation";
+	import MultiCard from './MultiCard.svelte';
 
 	let { violations }: {
 		violations: Violation[];
 	} = $props();
 </script>
 
-<SingleCard
+<MultiCard
 	title="Illegale Preiserhöhungen"
 	data={violations.map((v) => ({
 		date: new Date(v.day),
-		value: parseInt(v.violations) / 1_000
+		total: parseInt(v.violations) / 1_000,
+		low: parseInt(v.violations_low) / 1_000,
+		moderate: parseInt(v.violations_moderate) / 1_000,
+		high: parseInt(v.violations_high) / 1_000
 	}))}
 	label="k"
 	value={Intl.NumberFormat('de-DE').format(parseInt(violations[violations.length - 1].violations))}

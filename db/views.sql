@@ -254,6 +254,9 @@ CREATE MATERIALIZED VIEW violations AS
 SELECT
     DATE (timestamp) AS day,
     count(*) AS violations,
+		SUM(CASE WHEN severity = 0 THEN 1 ELSE 0 END) AS violations_low,
+	SUM(CASE WHEN severity = 1 THEN 1 ELSE 0 END) AS violations_moderate,
+	SUM(CASE WHEN severity = 2 THEN 1 ELSE 0 END) AS violations_high,
     count(DISTINCT station_uuid) AS violators,
 		SUM(fee) AS total_fees
 FROM illegal_changes
