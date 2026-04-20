@@ -29,7 +29,7 @@
 			<SectionHeader id="station">{data.name}</SectionHeader>
 			<p>Marke: 
 				<BrandSheet brand={data.brand}>
-					<span class="underline">
+					<span class="underline cursor-pointer">
 						{data.brand}
 					</span>
 				</BrandSheet>
