@@ -103,8 +103,8 @@
 			<LineChart
 				data={data.map((agg) => ({
 					date: new Date(agg.day),
-					diesel_e5: parseFloat(agg.diesel_avg) - parseFloat(agg.e5_avg),
-					diesel_e10: parseFloat(agg.diesel_avg) - parseFloat(agg.e10_avg),
+					e5_diesel: parseFloat(agg.e5_avg) - parseFloat(agg.diesel_avg),
+					e10_diesel: parseFloat(agg.e10_avg) - parseFloat(agg.diesel_avg),
 					e5_e10: parseFloat(agg.e5_avg) - parseFloat(agg.e10_avg)
 				})).filter(
 					(d) =>
@@ -118,13 +118,13 @@
 				legend
 				series={[
 					{
-						key: 'diesel_e5',
-						label: 'Diesel - Super',
+						key: 'e5_diesel',
+						label: 'Super - Diesel',
 						color: 'var(--chart-1)'
 					},
 					{
-						key: 'diesel_e10',
-						label: 'Diesel - Super E10',
+						key: 'e10_diesel',
+						label: 'Super E10 - Diesel',
 						color: 'var(--chart-2)'
 					},
 					{
