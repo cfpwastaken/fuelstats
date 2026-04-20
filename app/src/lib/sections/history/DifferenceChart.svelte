@@ -123,11 +123,6 @@
 						color: 'var(--chart-1)'
 					},
 					{
-						key: 'e10_diesel',
-						label: 'Super E10 - Diesel',
-						color: 'var(--chart-2)'
-					},
-					{
 						key: 'e5_e10',
 						label: 'Super - Super E10',
 						color: 'var(--chart-3)'
