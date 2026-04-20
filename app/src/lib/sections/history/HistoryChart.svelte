@@ -11,6 +11,8 @@
 	import { fromDate, getLocalTimeZone, parseDate, today, type DateValue } from '@internationalized/date';
 	import { onMount } from 'svelte';
 	import type { DailyAggregation } from '$lib/types/DailyAggregations';
+	import Checkbox from '$lib/components/ui/checkbox/checkbox.svelte';
+	import Label from '$lib/components/ui/label/label.svelte';
 
 	let {
 		data
@@ -30,10 +32,27 @@
 		start: today(getLocalTimeZone()).subtract({ days: 30 }),
 		end: today(getLocalTimeZone()).subtract({ days: 1 })
 	});
+	let showOil = $state(false);
 
 	onMount(() => {
 		console.log("Local timezone: " + getLocalTimeZone());
 	})
+	
+	function forwardFillOil(data: DailyAggregation[]): DailyAggregation[] {
+		let lastOil: number | null = null;
+
+		return data.map((d) => {
+			if (d.crude_oil != null) {
+				lastOil = parseFloat(d.crude_oil);
+				return d;
+			}
+
+			return {
+				...d,
+				crude_oil: lastOil == null ? null : (lastOil + "")
+			};
+		});
+	}
 </script>
 
 <Card.Root>
@@ -42,9 +61,11 @@
 		<Card.Description
 			>Die Entwicklung der durchschnittlichen Kraftstoffpreise</Card.Description
 		>
-		<Card.Action>
+		<Card.Action class="flex items-center">
+			<Checkbox bind:checked={showOil} id="show-oil" />
+			<Label for="show-oil" class="ml-2">Rohöl anzeigen</Label>
 			<DropdownMenu.Root>
-				<DropdownMenu.Trigger>
+				<DropdownMenu.Trigger class="ml-4">
 					{#snippet child({ props })}
 						<Button {...props}>Open</Button>
 					{/snippet}
@@ -96,16 +117,18 @@
 			config={{
 				diesel: { label: 'Diesel', color: 'var(--chart-1)' },
 				e5: { label: 'Super', color: 'var(--chart-2)' },
-				e10: { label: 'Super E10', color: 'var(--chart-3)' }
+				e10: { label: 'Super E10', color: 'var(--chart-3)' },
+				...(showOil && { crude_oil: { label: 'Rohöl', color: 'var(--chart-4)' } })
 			}}
  class="w-[calc(100%-2rem)] h-[calc(100%-10rem)] pl-2"
 		>
 			<LineChart
-				data={data.map((agg) => ({
+				data={forwardFillOil(data).map((agg) => ({
 					date: new Date(agg.day),
 					diesel: parseFloat(agg.diesel_avg),
 					e5: parseFloat(agg.e5_avg),
-					e10: parseFloat(agg.e10_avg)
+					e10: parseFloat(agg.e10_avg),
+					crude_oil: agg.crude_oil != null ? parseFloat(agg.crude_oil).toFixed(3) : null
 				})).filter(
 					(d) =>
 					fromDate(d.date, getLocalTimeZone()).compare(alwaysRange.start) >= 0 &&
@@ -131,7 +154,14 @@
 						key: 'e10',
 						label: 'Super E10',
 						color: 'var(--chart-3)'
-					}
+					},
+					...(showOil
+						? [{
+						key: 'crude_oil',
+						label: 'Rohöl',
+						color: 'var(--chart-4)'
+					}]
+						: [])
 				]}
 				yDomain={null}
 				props={{

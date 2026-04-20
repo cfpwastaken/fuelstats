@@ -8,9 +8,17 @@
 	import Button from '../../components/ui/button/button.svelte';
 	import RangeCalendar from '../../components/ui/range-calendar/range-calendar.svelte';
 	import type { DateRange } from 'bits-ui';
-	import { fromDate, getLocalTimeZone, parseDate, today, type DateValue } from '@internationalized/date';
+	import {
+		fromDate,
+		getLocalTimeZone,
+		parseDate,
+		today,
+		type DateValue
+	} from '@internationalized/date';
 	import { onMount } from 'svelte';
 	import type { DailyAggregation } from '$lib/types/DailyAggregations';
+	import { Checkbox } from '$lib/components/ui/checkbox';
+	import { Label } from '$lib/components/ui/label';
 
 	let {
 		data
@@ -32,61 +40,92 @@
 	});
 
 	onMount(() => {
-		console.log("Local timezone: " + getLocalTimeZone());
-	})
+		console.log('Local timezone: ' + getLocalTimeZone());
+	});
+
+	let showOil = $state(false);
+
+	function forwardFillOil(data: DailyAggregation[]): DailyAggregation[] {
+		let lastOil: number | null = null;
+
+		return data.map((d) => {
+			if (d.crude_oil != null) {
+				lastOil = parseFloat(d.crude_oil);
+				return d;
+			}
+
+			return {
+				...d,
+				crude_oil: lastOil == null ? null : (lastOil + '')
+			};
+		});
+	}
 </script>
 
 <Card.Root>
 	<Card.Header>
 		<Card.Title class="text-2xl font-semibold">Preisdifferenzen</Card.Title>
-		<Card.Description
-			>.</Card.Description
-		>
-		<Card.Action>
+		<Card.Description>.</Card.Description>
+		<Card.Action class="flex items-center">
+			<Checkbox bind:checked={showOil} id="show-oil-diff" />
+			<Label for="show-oil-diff" class="ml-2">Rohöl anzeigen</Label>
 			<DropdownMenu.Root>
-				<DropdownMenu.Trigger>
+				<DropdownMenu.Trigger class="ml-4">
 					{#snippet child({ props })}
 						<Button {...props}>Open</Button>
 					{/snippet}
 				</DropdownMenu.Trigger>
 				<DropdownMenu.Content class="w-auto">
-					<Button variant="outline" onclick={() => {
-						alwaysRange = {
-							start: parseDate("2014-01-01"),
-							end: today(getLocalTimeZone()).subtract({ days: 1 })
-						}
-						range = alwaysRange;
-					}}>
+					<Button
+						variant="outline"
+						onclick={() => {
+							alwaysRange = {
+								start: parseDate('2014-01-01'),
+								end: today(getLocalTimeZone()).subtract({ days: 1 })
+							};
+							range = alwaysRange;
+						}}
+					>
 						Alles
 					</Button>
-					<Button variant="outline" onclick={() => {
-						alwaysRange = {
-							start: today(getLocalTimeZone()).subtract({ days: 30 }),
-							end: today(getLocalTimeZone()).subtract({ days: 1 })
-						}
-						range = alwaysRange;
-					}}>
+					<Button
+						variant="outline"
+						onclick={() => {
+							alwaysRange = {
+								start: today(getLocalTimeZone()).subtract({ days: 30 }),
+								end: today(getLocalTimeZone()).subtract({ days: 1 })
+							};
+							range = alwaysRange;
+						}}
+					>
 						30 Tage
 					</Button>
-					<Button variant="outline" onclick={() => {
-						alwaysRange = {
-							start: today(getLocalTimeZone()).subtract({ years: 1 }),
-							end: today(getLocalTimeZone()).subtract({ days: 1 })
-						}
-						range = alwaysRange;
-					}}>
+					<Button
+						variant="outline"
+						onclick={() => {
+							alwaysRange = {
+								start: today(getLocalTimeZone()).subtract({ years: 1 }),
+								end: today(getLocalTimeZone()).subtract({ days: 1 })
+							};
+							range = alwaysRange;
+						}}
+					>
 						1 Jahr
 					</Button>
 
-					<RangeCalendar bind:value={range} onValueChange={(value) => {
-						if(!(value.start && value.end)) return;
-						alwaysRange = {
-							start: value.start,
-							end: value.end
-						}
-					}} isDateDisabled={(date) => {
-						return date.compare(today(getLocalTimeZone()).subtract({ days: 1 })) > 0;
-					}} />
+					<RangeCalendar
+						bind:value={range}
+						onValueChange={(value) => {
+							if (!(value.start && value.end)) return;
+							alwaysRange = {
+								start: value.start,
+								end: value.end
+							};
+						}}
+						isDateDisabled={(date) => {
+							return date.compare(today(getLocalTimeZone()).subtract({ days: 1 })) > 0;
+						}}
+					/>
 				</DropdownMenu.Content>
 			</DropdownMenu.Root>
 		</Card.Action>
@@ -95,24 +134,30 @@
 		<Chart.Container
 			config={{
 				diesel_e5: { label: 'Diesel - Super', color: 'var(--chart-1)' },
-				diesel_e10: { label: 'Diesel - Super E10', color: 'var(--chart-2)' },
-				e5_e10: { label: 'Super - Super E10', color: 'var(--chart-3)' }
+				e5_e10: { label: 'Super - Super E10', color: 'var(--chart-2)' },
+				...(showOil && {
+					crude_oil_diesel: { label: 'Rohöl - Diesel', color: 'var(--chart-3)' },
+					crude_oil_e5: { label: 'Rohöl - Super', color: 'var(--chart-4)' }
+				})
 			}}
- class="w-[calc(100%-2rem)] h-[calc(100%-10rem)] pl-2"
+			class="h-[calc(100%-10rem)] w-[calc(100%-2rem)] pl-2"
 		>
 			<LineChart
-				data={data.map((agg) => ({
-					date: new Date(agg.day),
-					e5_diesel: parseFloat(agg.e5_avg) - parseFloat(agg.diesel_avg),
-					e10_diesel: parseFloat(agg.e10_avg) - parseFloat(agg.diesel_avg),
-					e5_e10: parseFloat(agg.e5_avg) - parseFloat(agg.e10_avg)
-				})).filter(
-					(d) =>
-					fromDate(d.date, getLocalTimeZone()).compare(alwaysRange.start) >= 0 &&
-						fromDate(d.date, getLocalTimeZone()).compare(alwaysRange.end) <= 0
+				data={forwardFillOil(data)
+					.map((agg) => ({
+						date: new Date(agg.day),
+						e5_diesel: parseFloat(agg.e5_avg) - parseFloat(agg.diesel_avg),
+						e5_e10: parseFloat(agg.e5_avg) - parseFloat(agg.e10_avg),
+						crude_oil_diesel: agg.crude_oil ? parseFloat(agg.crude_oil) - parseFloat(agg.diesel_avg) : null,
+						crude_oil_e5: agg.crude_oil ? parseFloat(agg.crude_oil) - parseFloat(agg.e5_avg) : null
+					}))
+					.filter(
+						(d) =>
+							fromDate(d.date, getLocalTimeZone()).compare(alwaysRange.start) >= 0 &&
+							fromDate(d.date, getLocalTimeZone()).compare(alwaysRange.end) <= 0
 						// d.date >= alwaysRange.start.toDate(getLocalTimeZone()) &&
 						// d.date <= alwaysRange.end.toDate(getLocalTimeZone())
-				)}
+					)}
 				x="date"
 				xScale={scaleUtc()}
 				legend
@@ -125,8 +170,22 @@
 					{
 						key: 'e5_e10',
 						label: 'Super - Super E10',
-						color: 'var(--chart-3)'
-					}
+						color: 'var(--chart-2)'
+					},
+					...(showOil
+						? [
+								{
+									key: 'crude_oil_diesel',
+									label: 'Rohöl - Diesel',
+									color: 'var(--chart-3)'
+								},
+								{
+									key: 'crude_oil_e5',
+									label: 'Rohöl - Super',
+									color: 'var(--chart-4)'
+								}
+							]
+						: [])
 				]}
 				yDomain={null}
 				props={{

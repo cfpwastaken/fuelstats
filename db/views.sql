@@ -4,29 +4,27 @@
 DROP MATERIALIZED VIEW IF EXISTS daily_aggregations CASCADE;
 
 CREATE MATERIALIZED VIEW daily_aggregations AS
-SELECT date_trunc('day', "timestamp")                             AS day,
+WITH station_avg AS (
+SELECT date_trunc('day', "timestamp")                       AS day,
        avg(NULLIF(NULLIF(diesel, 0::numeric), '-0.001'::numeric)) AS diesel_avg,
        avg(NULLIF(NULLIF(e5, 0::numeric), '-0.001'::numeric))     AS e5_avg,
        avg(NULLIF(NULLIF(e10, 0::numeric), '-0.001'::numeric))    AS e10_avg,
-       --PERCENTILE_CONT(0.5) WITHIN GROUP(ORDER BY NULLIF(NULLIF(diesel, 0::numeric), '-0.001'::numeric)) AS diesel_median,
-       --PERCENTILE_CONT(0.5) WITHIN GROUP(ORDER BY NULLIF(NULLIF(e5, 0::numeric), '-0.001'::numeric))     AS e5_median,
-       --PERCENTILE_CONT(0.5) WITHIN GROUP(ORDER BY NULLIF(NULLIF(e10, 0::numeric), '-0.001'::numeric))    AS e10_median,
        min(NULLIF(NULLIF(diesel, 0::numeric), '-0.001'::numeric)) AS diesel_min,
        min(NULLIF(NULLIF(e5, 0::numeric), '-0.001'::numeric))     AS e5_min,
        min(NULLIF(NULLIF(e10, 0::numeric), '-0.001'::numeric))    AS e10_min,
        max(NULLIF(NULLIF(diesel, 0::numeric), '-0.001'::numeric)) AS diesel_max,
        max(NULLIF(NULLIF(e5, 0::numeric), '-0.001'::numeric))     AS e5_max,
        max(NULLIF(NULLIF(e10, 0::numeric), '-0.001'::numeric))    AS e10_max,
-       max(NULLIF(NULLIF(diesel, 0::numeric), '-0.001'::numeric)) -
-       min(NULLIF(NULLIF(diesel, 0::numeric), '-0.001'::numeric)) AS diesel_range,
-       max(NULLIF(NULLIF(e5, 0::numeric), '-0.001'::numeric)) -
-       min(NULLIF(NULLIF(e5, 0::numeric), '-0.001'::numeric))     AS e5_range,
-       max(NULLIF(NULLIF(e10, 0::numeric), '-0.001'::numeric)) -
-       min(NULLIF(NULLIF(e10, 0::numeric), '-0.001'::numeric))    AS e10_range,
        count(*)                                                   AS price_changes
-FROM history
-GROUP BY (date_trunc('day', "timestamp"))
-ORDER BY (date_trunc('day', "timestamp")) DESC;
+FROM history h
+GROUP BY (date_trunc('day'::text, "timestamp"))
+ORDER BY (date_trunc('day'::text, "timestamp"))
+)
+SELECT
+    da.*,
+    o.eur_liter AS crude_oil,
+FROM station_avg da
+LEFT JOIN crude_oil o ON o.date = da.day;
 
 DROP MATERIALIZED VIEW IF EXISTS monthly_aggregations;
 

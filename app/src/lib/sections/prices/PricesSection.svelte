@@ -1,5 +1,7 @@
 <script lang="ts">
+	import { browser } from '$app/environment';
 	import SectionHeader from '$lib/SectionHeader.svelte';
+	import SingleCard from '$lib/SingleCard.svelte';
 	import StatCard from '$lib/StatCard.svelte';
 	import type { DailyAggregation } from '$lib/types/DailyAggregations';
 	import DailyAverageGraph from './DailyAverageGraph.svelte';
@@ -45,5 +47,29 @@
 	{@render card("Diesel Durchschnitt", "diesel")}
 	{@render card("Super Durchschnitt", "e5")}
 	{@render card("Super E10 Durchschnitt", "e10")}
+</div>
+<div class="flex flex-wrap gap-4">
+	{#if browser}
+		{#await fetch("/fuel/api/aggregations/daily/oil").then(res => res.json() as Promise<{ date: string, eur_liter: string }[]>) then res}
+			<SingleCard
+				title="Rohöl"
+				value={Intl.NumberFormat('de-DE', {
+					style: 'currency',
+					currency: 'EUR',
+					maximumFractionDigits: 3
+				}).format(parseFloat(res[0]?.eur_liter || '0'))}
+				change={(res.length > 1
+					? (parseFloat(res[0]?.eur_liter || '0') - parseFloat(res[1]?.eur_liter || '0')) /
+						parseFloat(res[1]?.eur_liter || '1')
+					: 0)}
+				data={res.slice(0, 30).map((agg) => ({
+					date: new Date(agg.date),
+					value: parseFloat(agg.eur_liter || '0'),
+				}))}
+			/>
+		{/await}
+	{/if}
+	<div class="flex-1"></div>
+	<div class="flex-1"></div>
 </div>
 <DailyAverageGraph />

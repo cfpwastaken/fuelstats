@@ -36,3 +36,10 @@ CREATE TABLE brand_map (
 	raw_brand VARCHAR PRIMARY KEY,
 	normalized VARCHAR NOT NULL
 );
+
+create table crude_oil
+(
+    date       date,
+    usd_barrel numeric,
+    eur_liter  numeric generated always as (((usd_barrel * 0.85) / 158.987)) stored
+);

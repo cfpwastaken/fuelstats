@@ -12,5 +12,6 @@ export interface DailyAggregation {
 	diesel_range: string;
 	e5_range: string;
 	e10_range: string;
+	crude_oil: string | null;
 	price_changes: string;
 }
