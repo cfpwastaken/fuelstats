@@ -13,7 +13,7 @@
 		date: new Date(v.day),
 		value: parseInt(v.violations) / 1_000
 	}))}
-	label="k€"
+	label="k"
 	value={Intl.NumberFormat('de-DE').format(parseInt(violations[violations.length - 1].violations))}
 	change={(parseInt(violations[violations.length - 1].violations) -
 		parseInt(violations[violations.length - 2].violations)) /
