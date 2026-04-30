@@ -25,11 +25,8 @@
 {#snippet card(title: string, key: FuelKey)}
 	<StatCard
 		{title}
-		value={Intl.NumberFormat('de-DE', {
-			style: 'currency',
-			currency: 'EUR',
-			maximumFractionDigits: 3
-		}).format(parseFloat(data.dailyAggregations[0][fuelField(key, 'avg')]))}
+		display="price"
+		value={data.dailyAggregations[0][fuelField(key, 'avg')]}
 		change={(parseFloat(data.dailyAggregations[0][fuelField(key, 'avg')]) -
 			parseFloat(data.dailyAggregations[1][fuelField(key, 'avg')])) /
 			parseFloat(data.dailyAggregations[1][fuelField(key, 'avg')])}
@@ -53,11 +50,8 @@
 		{#await fetch("/fuel/api/aggregations/daily/oil").then(res => res.json() as Promise<{ date: string, eur_liter: string }[]>) then res}
 			<SingleCard
 				title="Rohöl"
-				value={Intl.NumberFormat('de-DE', {
-					style: 'currency',
-					currency: 'EUR',
-					maximumFractionDigits: 3
-				}).format(parseFloat(res[0]?.eur_liter || '0'))}
+				display="price"
+				value={res[0]?.eur_liter || '0'}
 				change={(res.length > 1
 					? (parseFloat(res[0]?.eur_liter || '0') - parseFloat(res[1]?.eur_liter || '0')) /
 						parseFloat(res[1]?.eur_liter || '1')

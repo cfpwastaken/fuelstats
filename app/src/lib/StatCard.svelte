@@ -6,16 +6,19 @@
 	import { LineChart } from 'layerchart';
 	import { scaleUtc } from 'd3-scale';
 	import { curveLinear } from 'd3-shape';
+	import FuelPrice from './components/FuelPrice.svelte';
 
 	let {
 		title,
 		value,
 		change,
-		data
+		data,
+		display = "normal"
 	}: {
 		title: string;
 		value: string;
 		change: number;
+		display?: "normal" | "price";
 		data: {
 			date: Date;
 			avg: number;
@@ -29,7 +32,11 @@
 	<Card.Header>
 		<Card.Description class="text-xl">{title}</Card.Description>
 		<Card.Title class="text-5xl font-semibold tabular-nums @[250px]/card:text-3xl">
-			{value}
+			{#if display === "price"}
+				<FuelPrice price={Number(value)} />
+			{:else}
+				{value}
+			{/if}
 		</Card.Title>
 		<Card.Action>
 			<Badge variant="outline" class="text-md">
