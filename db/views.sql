@@ -136,17 +136,17 @@ ORDER BY station_uuid, (date_part('dow', "timestamp"));
 
 CREATE OR REPLACE FUNCTION low_fee(repetition BIGINT)
 RETURNS FLOAT AS $$
-	SELECT LEAST(100000, 45 * POWER(1.2, repetition));
+    SELECT LEAST(100000, 25 * POWER(1.05, repetition));
 $$ LANGUAGE SQL;
 
 CREATE OR REPLACE FUNCTION moderate_fee(repetition BIGINT)
 RETURNS FLOAT AS $$
-	SELECT LEAST(100000, 150 * POWER(1.25, repetition));
+    SELECT LEAST(100000, 100 * POWER(1.1, repetition));
 $$ LANGUAGE SQL;
 
 CREATE OR REPLACE FUNCTION high_fee(repetition BIGINT)
 RETURNS FLOAT AS $$
-	SELECT LEAST(100000, 500 * POWER(1.25, repetition));
+    SELECT LEAST(100000, 350 * POWER(1.15, repetition));
 $$ LANGUAGE SQL;
 
 DROP MATERIALIZED VIEW IF EXISTS normalized_stations CASCADE;
