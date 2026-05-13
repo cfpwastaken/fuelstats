@@ -6,6 +6,7 @@
 	import type { CalendarDate } from '@internationalized/date';
 	import BrandSheet from '$lib/components/brand/BrandSheet.svelte';
 	import StationSheet from '$lib/components/station/StationSheet.svelte';
+	import type NoIncrease from '$lib/types/NoIncrease';
 
 	type Props =
 		| {
@@ -40,7 +41,12 @@
 					city: string;
 					total_fees: string;
 				}[];
-		  };
+		  }
+		| {
+			type: "no_increase";
+			date: CalendarDate;
+			violators: NoIncrease[];
+		};
 
 	let props: Props = $props();
 
@@ -57,15 +63,18 @@
 						parseFloat(v.total_fees),
 					0
 				)
-			: props.violators.filter((v) => {
+			: props.type === 'stations'
+			? props.violators.filter((v) => {
 					const vDate = new Date(v.day);
 					return (vDate.getFullYear() === props.date.year &&
 						vDate.getMonth() + 1 === props.date.month &&
 						vDate.getDate() === props.date.day);
 				}).reduce((sum, v) => sum + parseFloat(v.total_fees), 0)
+			: 0
 	);
 
-	let violationType = $state<'high' | 'moderate' | 'low' | 'fee'>('high');
+	// svelte-ignore state_referenced_locally
+	let violationType = $state<'high' | 'moderate' | 'low' | 'fee' | 'diesel' | 'e5' | 'e10'>(props.type === 'no_increase' ? 'diesel' : 'high');
 	const VIOLATION_TYPES = {
 		high: 'Schwere Verstöße',
 		moderate: 'Moderate Verstöße',
@@ -76,36 +85,64 @@
 
 <Card.Root class="flex-1 min-w-2xs">
 	<Card.Header>
-		<Card.Description class="text-xl">Illegale Preiserhöher ({props.type === 'brands' ? 'Marken' : 'Tankstellen'})</Card.Description>
+		<Card.Description class="text-xl">
+			{#if props.type == "no_increase"}
+				Tankstellen ohne Preiserhöhung
+			{:else}
+				Illegale Preiserhöher ({props.type === 'brands' ? 'Marken' : 'Tankstellen'})
+			{/if}
+		</Card.Description>
 		<Card.Title
 			class="flex items-center gap-4 text-5xl font-semibold tabular-nums @[250px]/card:text-3xl"
 		>
 			Top {props.type === "brands" ? "10": "5"}
 			<Select.Root type="single" bind:value={violationType}>
 				<Select.Trigger class="p-5 text-2xl">
-					{VIOLATION_TYPES[violationType]}
+					{#if violationType == "diesel"}
+						Diesel
+					{:else if violationType == "e5"}
+						Super
+					{:else if violationType == "e10"}
+						Super E10
+					{:else}
+						{VIOLATION_TYPES[violationType]}
+					{/if}
 				</Select.Trigger>
 				<Select.Content>
 					<Select.Group>
-						{#each Object.entries(VIOLATION_TYPES) as [key, value] (value)}
-							<Select.Item value={key} class="text-lg">
-								{value}
+						{#if props.type != "no_increase"}
+							{#each Object.entries(VIOLATION_TYPES) as [key, value] (value)}
+								<Select.Item value={key} class="text-lg">
+									{value}
+								</Select.Item>
+							{/each}
+						{:else}
+							<Select.Item value="diesel" class="text-lg">
+								Diesel
 							</Select.Item>
-						{/each}
+							<Select.Item value="e5" class="text-lg">
+								Super
+							</Select.Item>
+							<Select.Item value="e10" class="text-lg">
+								Super E10
+							</Select.Item>
+						{/if}
 					</Select.Group>
 				</Select.Content>
 			</Select.Root>
 		</Card.Title>
-		<Card.Action>
-			<Badge variant="outline" class="flex gap-2 p-3 text-lg">
-				<CoinsIcon style="width: 1.25rem !important; height: 1.25rem !important;" />
-				{Intl.NumberFormat('de-DE', {
-					style: 'currency',
-					currency: 'EUR',
-					maximumFractionDigits: 0
-				}).format(totalViolationCash)}
-			</Badge>
-		</Card.Action>
+		{#if props.type != "no_increase"}
+			<Card.Action>
+				<Badge variant="outline" class="flex gap-2 p-3 text-lg">
+					<CoinsIcon style="width: 1.25rem !important; height: 1.25rem !important;" />
+					{Intl.NumberFormat('de-DE', {
+						style: 'currency',
+						currency: 'EUR',
+						maximumFractionDigits: 0
+					}).format(totalViolationCash)}
+				</Badge>
+			</Card.Action>
+		{/if}
 	</Card.Header>
 	<Card.Content>
 		{#if !props.violators || props.violators.length === 0}
@@ -217,6 +254,47 @@
 										maximumFractionDigits: 0
 									}).format(parseFloat(violator.total_fees))}
 								</span>
+							</div>
+							<div class="flex items-center gap-4">
+								<span class="text-2xl invisible h-0">{i + 1}.</span>
+								<span class="text-md font-medium">
+									{violator.street} {violator.house_number}
+								</span>
+							</div>
+							<div class="flex items-center gap-4">
+								<span class="text-2xl invisible h-0">{i + 1}.</span>
+								<span class="text-md font-medium">
+									{violator.post_code} {violator.city}
+								</span>
+							</div>
+						</div>
+					{/each}
+				{:else if props.type == "no_increase"}
+					<!-- eslint-disable-next-line svelte/require-each-key -->
+					{#each props.violators
+						.filter((v) => {
+							const vDate = new Date(v.day);
+							return (vDate.getFullYear() === props.date.year &&
+								vDate.getMonth() + 1 === props.date.month &&
+								vDate.getDate() === props.date.day)
+						})
+						.filter((v) => {
+							return v.fuel_type === violationType;
+						})
+						.slice(0, 5) as violator, i}
+						<div class="flex flex-col">
+							<div class="flex items-center gap-4">
+								<span class="text-2xl">{i + 1}.</span>
+								<StationSheet station={violator.station_uuid}>
+									<span class="text-lg font-medium cursor-pointer underline"
+										>{violator.name || '(Unbekannt)'}
+										{#if violator.brand}
+											<span class="text-lg font-medium text-muted-foreground"
+												>({violator.brand})</span
+											>
+										{/if}
+									</span>
+								</StationSheet>
 							</div>
 							<div class="flex items-center gap-4">
 								<span class="text-2xl invisible h-0">{i + 1}.</span>

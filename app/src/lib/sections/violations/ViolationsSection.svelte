@@ -54,3 +54,13 @@
 		{/await}
 	{/if}
 </div>
+{#if browser}
+	{#await fetch(`api/no_increase?day=${illegalDate.toString()}`).then((res) => res.json())}
+		<span class="flex flex-1 items-center justify-center gap-2 text-lg">
+			<Spinner />
+			Laden...
+		</span>
+	{:then violators}
+		<ViolatorsList {violators} type="no_increase" date={illegalDate} />
+	{/await}
+{/if}

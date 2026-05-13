@@ -392,3 +392,63 @@ SELECT
 FROM normalized_stations st
 LEFT JOIN violations vi ON vi.station_uuid = st.uuid
 ORDER BY total_fees DESC;
+
+--
+-- MORE STATS
+--
+DROP MATERIALIZED VIEW IF EXISTS no_increase CASCADE;
+
+CREATE MATERIALIZED VIEW no_increase AS
+WITH expanded AS (
+	SELECT
+		date_trunc('day', "timestamp")::date AS day,
+		station_uuid,
+		'diesel' AS fuel_type,
+		diesel AS price
+	FROM history
+	WHERE "timestamp" >= '2026-04-01'
+
+	UNION ALL
+	SELECT
+		date_trunc('day', "timestamp")::date,
+		station_uuid,
+		'e5',
+		e5
+	FROM history
+	WHERE "timestamp" >= '2026-04-01'
+
+	UNION ALL
+	SELECT
+		date_trunc('day', "timestamp")::date,
+		station_uuid,
+		'e10',
+		e10
+	FROM history
+	WHERE "timestamp" >= '2026-04-01'
+),
+with_diffs AS (
+	SELECT
+		day,
+		station_uuid,
+		fuel_type,
+		price,
+		price - lag(price) OVER (
+			PARTITION BY station_uuid, fuel_type ORDER BY day, price
+		) AS diff
+	FROM expanded
+)
+SELECT
+	day,
+	station_uuid,
+	fuel_type,
+	st.name,
+	st.brand,
+	st.street,
+	st.house_number,
+	st.post_code,
+	st.city
+FROM with_diffs
+LEFT JOIN normalized_stations st ON st.uuid = station_uuid
+GROUP BY day, station_uuid, fuel_type, st.name, st.brand, st.street, st.house_number, st.post_code, st.city
+HAVING MAX(diff) <= 0 OR MAX(diff) IS NULL
+ORDER BY day, station_uuid, fuel_type;
