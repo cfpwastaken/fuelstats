@@ -2,6 +2,7 @@
 	import { browser } from "$app/environment";
 	import SectionHeader from "$lib/SectionHeader.svelte";
 	import BrandSheet from "../brand/BrandSheet.svelte";
+	import FuelPrice from "../FuelPrice.svelte";
 	import Button from "../ui/button/button.svelte";
 
 	let { station }: { station: string } = $props();
@@ -38,6 +39,19 @@
 			<p>Seit: {new Date(data.first_active).toLocaleString("de-DE")}</p>
 			<p>Verstöße: {Intl.NumberFormat('de-DE').format(parseInt(data.violation_count))}</p>
 			<p>Gesamtstrafe: {Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(parseFloat(data.total_fees))}</p>
+
+			{#await fetch("/fuel/api/live/prices/" + station).then((res) => res.json() as Promise<{diesel: number; e5: number; e10: number}>).then((data) => data)}
+				<p>Lade aktuelle Preise...</p>
+			{:then prices}
+				<ul class="list-disc list-inside">
+					<span>Diesel:</span>
+					<FuelPrice price={prices.diesel} />
+					<span>Super:</span>
+					<FuelPrice price={prices.e5} />
+					<span>Super E10:</span>
+					<FuelPrice price={prices.e10} />
+				</ul>
+			{/await}
 
 			<Button variant="secondary" class="mt-8" onclick={() => {
 				navigator.clipboard.writeText(`${location.origin}/fuel/station/${data.uuid}`);

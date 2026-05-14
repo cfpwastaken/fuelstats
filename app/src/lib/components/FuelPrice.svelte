@@ -6,9 +6,9 @@
 <span
 	class={`flex items-start justify-start text-5xl gap-0.5 font-segment ${className ?? ""} tracking-wide`}
 >
-	{price ? (Math.floor(price * 100) / 100).toFixed(2) : "N/A"}
+	{price ? (Math.floor(price * 100) / 100).toFixed(2) : "-.--"}
 	<span class="text-2xl">
-		{price ? Math.floor(price * 1000) % 10 : "0"}
+		{price ? Math.floor(price * 1000) % 10 : ""}
 	</span>
 	<span class="ml-3">€</span>
 </span>
