@@ -339,6 +339,7 @@ SELECT
     COUNT(*) AS violations,
 		SUM(fee) AS total_fees
 FROM illegal_changes
+WHERE DATE (timestamp) >= '2026-04-01'::date
 GROUP BY
     day,
     station_uuid,
@@ -367,6 +368,7 @@ WITH stations AS (
 violations AS (
     SELECT brand, COUNT(*) AS violation_count, SUM(fee) AS total_fees
     FROM illegal_changes
+		WHERE DATE (timestamp) >= '2026-04-01'::date
     GROUP BY brand
 )
 SELECT
@@ -384,6 +386,7 @@ CREATE MATERIALIZED VIEW station_violations AS
 WITH violations AS (
     SELECT station_uuid, COUNT(*) AS violation_count, SUM(fee) AS total_fees
     FROM illegal_changes
+		WHERE DATE (timestamp) >= '2026-04-01'::date
     GROUP BY station_uuid
 )
 SELECT
