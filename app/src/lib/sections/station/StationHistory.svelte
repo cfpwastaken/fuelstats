@@ -186,7 +186,9 @@
 					}}
 				>
 					{#snippet tooltip()}
-						<Chart.Tooltip hideLabel />
+						<Chart.Tooltip labelFormatter={(label) => {
+							return (label as Date).toLocaleTimeString("de-DE", { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+						}} />
 					{/snippet}
 				</LineChart>
 			</Chart.Container>

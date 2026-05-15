@@ -104,7 +104,7 @@
 					}}
 				>
 					{#snippet tooltip()}
-						<Chart.Tooltip hideLabel />
+						<Chart.Tooltip />
 					{/snippet}
 				</LineChart>
 			</Chart.Container>
