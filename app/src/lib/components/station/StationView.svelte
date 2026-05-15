@@ -68,17 +68,17 @@
 			</p>
 			<p>Adresse: {data.street} {data.house_number}, {data.post_code} {data.city}</p>
 			<p>Seit: {new Date(data.first_active).toLocaleString("de-DE")}</p>
-			<p>Verstöße: {data.violation_count != null ? Intl.NumberFormat('de-DE').format(parseInt(data.violation_count)) : "Keine"}</p>
+			<p>Verstöße: {data.violation_count != null ? Intl.NumberFormat('de-DE').format(parseInt(data.violation_count)) : "0"}</p>
 			{#await fetch("/fuel/api/station/" + station + "/violations").then((res) => res.json())}
 				<p>Letzer Verstoß: ...</p>
 				<p>Verstöße gestern: ...</p>
 				<p>Verstöße der letzten 7 Tage: ...</p>
 			{:then violations}
-				<p>Letzter Verstoß: {violations.length > 0 ? new Date(violations.sort((a: { timestamp: string | number | Date; }, b: { timestamp: string | number | Date; }) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())[0].timestamp).toLocaleString("de-DE") : "Keine Verstöße"}</p>
+				<p>Letzter Verstoß: {violations.length > 0 ? new Date(violations.sort((a: { timestamp: string | number | Date; }, b: { timestamp: string | number | Date; }) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())[0].timestamp).toLocaleString("de-DE") : "Nie"}</p>
 				<p>Verstöße gestern: {violations.filter((v: { timestamp: string; }) => wasYesterday(v.timestamp)).length}</p>
 				<p>Verstöße der letzten 7 Tage: {violations.filter((v: { timestamp: string; }) => wasLast7Days(v.timestamp)).length}</p>
 			{/await}
-			<p>Gesamtstrafe: {data.total_fees != null ? Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(parseFloat(data.total_fees)) : "Keine"}</p>
+			<p>Gesamtstrafe: {data.total_fees != null ? Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(parseFloat(data.total_fees)) : "0€"}</p>
 
 			{#await fetch("/fuel/api/live/prices/" + station).then((res) => res.json() as Promise<{diesel: number; e5: number; e10: number}>).then((data) => data)}
 				<p>Lade aktuelle Preise...</p>
