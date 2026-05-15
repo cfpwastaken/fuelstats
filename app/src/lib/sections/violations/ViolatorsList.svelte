@@ -75,7 +75,7 @@
 	);
 
 	// svelte-ignore state_referenced_locally
-	let violationType = $state<'high' | 'moderate' | 'low' | 'fee' | 'diesel' | 'e5' | 'e10'>(props.type === 'no_increase' ? 'diesel' : 'high');
+	let violationType = $state<'high' | 'moderate' | 'low' | 'fee' | 'diesel' | 'e5' | 'e10'>(props.type === 'no_increase' ? 'diesel' : 'fee');
 	const VIOLATION_TYPES = {
 		high: 'Schwere Verstöße',
 		moderate: 'Moderate Verstöße',
@@ -213,6 +213,7 @@
 						if (config.cityFilter && v.city?.toLowerCase() != config.cityFilter.toLowerCase()) return false;
 						return true;
 					})}
+					<!-- eslint-disable-next-line svelte/require-each-key -->
 					{#each filteredViolators
 						.filter((v) => {
 							const vDate = new Date(v.day);
@@ -234,7 +235,7 @@
 							}
 							return 0;
 						})
-						.slice(0, 5) as violator, i (violator.station_uuid)}
+						.slice(0, 5) as violator, i}
 						<div class="flex flex-col">
 							<div class="flex items-center gap-4">
 								<span class="text-2xl">{i + 1}.</span>
