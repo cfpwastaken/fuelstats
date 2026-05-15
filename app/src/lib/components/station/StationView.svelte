@@ -3,9 +3,11 @@
 	import SectionHeader from "$lib/SectionHeader.svelte";
 	import StationGraph from "$lib/sections/station/StationGraph.svelte";
 	import StationHistory from "$lib/sections/station/StationHistory.svelte";
+	import { SvelteDate } from "svelte/reactivity";
 	import BrandSheet from "../brand/BrandSheet.svelte";
 	import FuelPrice from "../FuelPrice.svelte";
 	import Button from "../ui/button/button.svelte";
+	import * as Card from "../ui/card";
 
 	let { station }: { station: string } = $props();
 
@@ -21,6 +23,33 @@
 		first_active: string;
 		violation_count: string;
 		total_fees: string;
+	}
+
+	function fuelTypeToName(fuel: string) {
+		switch (fuel) {
+			case "diesel":
+				return "Diesel";
+			case "e5":
+				return "Super";
+			case "e10":
+				return "Super E10";
+			default:
+				return fuel;
+		}
+	}
+
+	function wasYesterday(dateString: string) {
+		const date = new Date(dateString);
+		const yesterday = new SvelteDate();
+		yesterday.setDate(yesterday.getDate() - 1);
+		return date.toDateString() === yesterday.toDateString();
+	}
+
+	function wasLast7Days(dateString: string) {
+		const date = new Date(dateString);
+		const last7Days = new SvelteDate();
+		last7Days.setDate(last7Days.getDate() - 7);
+		return date >= last7Days;
 	}
 </script>
 
@@ -40,6 +69,15 @@
 			<p>Adresse: {data.street} {data.house_number}, {data.post_code} {data.city}</p>
 			<p>Seit: {new Date(data.first_active).toLocaleString("de-DE")}</p>
 			<p>Verstöße: {Intl.NumberFormat('de-DE').format(parseInt(data.violation_count))}</p>
+			{#await fetch("/fuel/api/station/" + station + "/violations").then((res) => res.json())}
+				<p>Letzer Verstoß: ...</p>
+				<p>Verstöße gestern: ...</p>
+				<p>Verstöße der letzten 7 Tage: ...</p>
+			{:then violations}
+				<p>Letzter Verstoß: {violations.length > 0 ? new Date(violations.sort((a: { timestamp: string | number | Date; }, b: { timestamp: string | number | Date; }) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())[0].timestamp).toLocaleString("de-DE") : "Keine Verstöße"}</p>
+				<p>Verstöße gestern: {violations.filter((v: { timestamp: string; }) => wasYesterday(v.timestamp)).length}</p>
+				<p>Verstöße der letzten 7 Tage: {violations.filter((v: { timestamp: string; }) => wasLast7Days(v.timestamp)).length}</p>
+			{/await}
 			<p>Gesamtstrafe: {Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(parseFloat(data.total_fees))}</p>
 
 			{#await fetch("/fuel/api/live/prices/" + station).then((res) => res.json() as Promise<{diesel: number; e5: number; e10: number}>).then((data) => data)}
@@ -59,6 +97,35 @@
 				<StationGraph uuid={data.uuid} />
 				<StationHistory uuid={data.uuid} />
 			</div>
+
+			{#await fetch("/fuel/api/station/" + station + "/violations").then((res) => res.json()) then violations}
+				<Card.Root class="mt-4">
+					<Card.Header>
+						<Card.Title>Illegale Preiserhöhungen</Card.Title>
+						<Card.Description>
+							Alle illegalen Preiserhöhungen von dieser Tankstelle.
+						</Card.Description>
+					</Card.Header>
+					<ul class="ml-4 flex flex-col gap-2">
+						<!-- eslint-disable-next-line svelte/require-each-key -->
+						{#each violations.sort((a: { timestamp: string; }, b: { timestamp: string; }) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()) as violation}
+							<li>
+								<span>{new Date(violation.timestamp).toLocaleString("de-DE")}</span>
+								&middot;
+								<span>{fuelTypeToName(violation.fuel)}</span>
+								&middot;
+								<span>{Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(violation.prev_price)}</span>
+								&rarr;
+								<span>{Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(violation.price)}</span>
+								&middot;
+								<span>Wiederholung: {violation.repetition_count}</span>
+								&middot;
+								<span>{Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(violation.fee)}</span>
+							</li>
+						{/each}
+					</ul>
+				</Card.Root>
+			{/await}
 
 			<Button variant="secondary" class="mt-8" onclick={() => {
 				navigator.clipboard.writeText(`${location.origin}/fuel/station/${data.uuid}`);
