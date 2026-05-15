@@ -8,6 +8,7 @@
 	import FuelPrice from "../FuelPrice.svelte";
 	import Button from "../ui/button/button.svelte";
 	import * as Card from "../ui/card";
+	import * as Table from "../ui/table";
 
 	let { station }: { station: string } = $props();
 
@@ -106,24 +107,31 @@
 							Alle illegalen Preiserhöhungen von dieser Tankstelle.
 						</Card.Description>
 					</Card.Header>
-					<ul class="ml-4 flex flex-col gap-2">
-						<!-- eslint-disable-next-line svelte/require-each-key -->
-						{#each violations.sort((a: { timestamp: string; }, b: { timestamp: string; }) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()) as violation}
-							<li>
-								<span>{new Date(violation.timestamp).toLocaleString("de-DE")}</span>
-								&middot;
-								<span>{fuelTypeToName(violation.fuel)}</span>
-								&middot;
-								<span>{Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(violation.prev_price)}</span>
-								&rarr;
-								<span>{Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(violation.price)}</span>
-								&middot;
-								<span>Wiederholung: {violation.repetition_count}</span>
-								&middot;
-								<span>{Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(violation.fee)}</span>
-							</li>
-						{/each}
-					</ul>
+					<Table.Root>
+						<Table.Header>
+							<Table.Row>
+								<Table.Head>Zeitstempel</Table.Head>
+								<Table.Head>Kraftstoff</Table.Head>
+								<Table.Head>Vorheriger Preis</Table.Head>
+								<Table.Head>Neuer Preis</Table.Head>
+								<Table.Head>Wiederholung</Table.Head>
+								<Table.Head>Strafe</Table.Head>
+							</Table.Row>
+						</Table.Header>
+						<Table.Body>
+							<!-- eslint-disable-next-line svelte/require-each-key -->
+							{#each violations.sort((a: { timestamp: string; }, b: { timestamp: string; }) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()) as violation}
+								<Table.Row>
+									<Table.Cell>{new Date(violation.timestamp).toLocaleString("de-DE")}</Table.Cell>
+									<Table.Cell>{fuelTypeToName(violation.fuel)}</Table.Cell>
+									<Table.Cell>{Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(violation.prev_price)}</Table.Cell>
+									<Table.Cell>{Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(violation.price)}</Table.Cell>
+									<Table.Cell>{violation.repetition_count}</Table.Cell>
+									<Table.Cell>{Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(violation.fee)}</Table.Cell>
+								</Table.Row>
+							{/each}
+						</Table.Body>
+					</Table.Root>
 				</Card.Root>
 			{/await}
 
