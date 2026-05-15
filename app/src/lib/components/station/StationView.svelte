@@ -68,7 +68,7 @@
 			</p>
 			<p>Adresse: {data.street} {data.house_number}, {data.post_code} {data.city}</p>
 			<p>Seit: {new Date(data.first_active).toLocaleString("de-DE")}</p>
-			<p>Verstöße: {Intl.NumberFormat('de-DE').format(parseInt(data.violation_count))}</p>
+			<p>Verstöße: {data.violation_count != null ? Intl.NumberFormat('de-DE').format(parseInt(data.violation_count)) : "Keine"}</p>
 			{#await fetch("/fuel/api/station/" + station + "/violations").then((res) => res.json())}
 				<p>Letzer Verstoß: ...</p>
 				<p>Verstöße gestern: ...</p>
@@ -78,7 +78,7 @@
 				<p>Verstöße gestern: {violations.filter((v: { timestamp: string; }) => wasYesterday(v.timestamp)).length}</p>
 				<p>Verstöße der letzten 7 Tage: {violations.filter((v: { timestamp: string; }) => wasLast7Days(v.timestamp)).length}</p>
 			{/await}
-			<p>Gesamtstrafe: {Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(parseFloat(data.total_fees))}</p>
+			<p>Gesamtstrafe: {data.total_fees != null ? Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(parseFloat(data.total_fees)) : "Keine"}</p>
 
 			{#await fetch("/fuel/api/live/prices/" + station).then((res) => res.json() as Promise<{diesel: number; e5: number; e10: number}>).then((data) => data)}
 				<p>Lade aktuelle Preise...</p>
