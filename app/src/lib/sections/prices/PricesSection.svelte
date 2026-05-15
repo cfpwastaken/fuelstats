@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
+	import { config } from '$lib/config.svelte';
 	import SectionHeader from '$lib/SectionHeader.svelte';
 	import SingleCard from '$lib/SingleCard.svelte';
 	import StatCard from '$lib/StatCard.svelte';
@@ -45,25 +46,27 @@
 	{@render card("Super Durchschnitt", "e5")}
 	{@render card("Super E10 Durchschnitt", "e10")}
 </div>
-<div class="flex flex-wrap gap-4">
-	{#if browser}
-		{#await fetch("/fuel/api/aggregations/daily/oil").then(res => res.json() as Promise<{ date: string, eur_liter: string }[]>) then res}
-			<SingleCard
-				title="Rohöl"
-				display="price"
-				value={res[0]?.eur_liter || '0'}
-				change={(res.length > 1
-					? (parseFloat(res[0]?.eur_liter || '0') - parseFloat(res[1]?.eur_liter || '0')) /
-						parseFloat(res[1]?.eur_liter || '1')
-					: 0)}
-				data={res.slice(0, 30).map((agg) => ({
-					date: new Date(agg.date),
-					value: parseFloat(agg.eur_liter || '0'),
-				}))}
-			/>
-		{/await}
-	{/if}
-	<div class="flex-1"></div>
-	<div class="flex-1"></div>
-</div>
+{#if config.showCrudeOil}
+	<div class="flex flex-wrap gap-4">
+		{#if browser}
+			{#await fetch("/fuel/api/aggregations/daily/oil").then(res => res.json() as Promise<{ date: string, eur_liter: string }[]>) then res}
+				<SingleCard
+					title="Rohöl"
+					display="price"
+					value={res[0]?.eur_liter || '0'}
+					change={(res.length > 1
+						? (parseFloat(res[0]?.eur_liter || '0') - parseFloat(res[1]?.eur_liter || '0')) /
+							parseFloat(res[1]?.eur_liter || '1')
+						: 0)}
+					data={res.slice(0, 30).map((agg) => ({
+						date: new Date(agg.date),
+						value: parseFloat(agg.eur_liter || '0'),
+					}))}
+				/>
+			{/await}
+		{/if}
+		<div class="flex-1"></div>
+		<div class="flex-1"></div>
+	</div>
+{/if}
 <DailyAverageGraph />

@@ -7,6 +7,7 @@
 	import BrandSheet from '$lib/components/brand/BrandSheet.svelte';
 	import StationSheet from '$lib/components/station/StationSheet.svelte';
 	import type NoIncrease from '$lib/types/NoIncrease';
+	import { config } from '$lib/config.svelte';
 
 	type Props =
 		| {
@@ -207,7 +208,12 @@
 						</div>
 					{/each}
 				{:else if props.type == "stations"}
-					{#each props.violators
+					{@const filteredViolators = props.violators.filter((v) => {
+						if (config.postCodeFilter && v.post_code != config.postCodeFilter) return false;
+						if (config.cityFilter && v.city?.toLowerCase() != config.cityFilter.toLowerCase()) return false;
+						return true;
+					})}
+					{#each filteredViolators
 						.filter((v) => {
 							const vDate = new Date(v.day);
 							return (vDate.getFullYear() === props.date.year &&
@@ -270,8 +276,13 @@
 						</div>
 					{/each}
 				{:else if props.type == "no_increase"}
+					{@const filteredViolators = props.violators.filter((v) => {
+						if (config.postCodeFilter && v.post_code != config.postCodeFilter) return false;
+						if (config.cityFilter && v.city?.toLowerCase() != config.cityFilter.toLowerCase()) return false;
+						return true;
+					})}
 					<!-- eslint-disable-next-line svelte/require-each-key -->
-					{#each props.violators
+					{#each filteredViolators
 						.filter((v) => {
 							const vDate = new Date(v.day);
 							return (vDate.getFullYear() === props.date.year &&

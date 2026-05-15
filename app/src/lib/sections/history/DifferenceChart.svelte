@@ -17,8 +17,7 @@
 	} from '@internationalized/date';
 	import { onMount } from 'svelte';
 	import type { DailyAggregation } from '$lib/types/DailyAggregations';
-	import { Checkbox } from '$lib/components/ui/checkbox';
-	import { Label } from '$lib/components/ui/label';
+	import { config } from '$lib/config.svelte';
 
 	let {
 		data
@@ -43,8 +42,6 @@
 		console.log('Local timezone: ' + getLocalTimeZone());
 	});
 
-	let showOil = $state(false);
-
 	function forwardFillOil(data: DailyAggregation[]): DailyAggregation[] {
 		let lastOil: number | null = null;
 
@@ -67,8 +64,6 @@
 		<Card.Title class="text-2xl font-semibold">Preisdifferenzen</Card.Title>
 		<Card.Description>.</Card.Description>
 		<Card.Action class="flex items-center">
-			<Checkbox bind:checked={showOil} id="show-oil-diff" />
-			<Label for="show-oil-diff" class="ml-2">Rohöl anzeigen</Label>
 			<DropdownMenu.Root>
 				<DropdownMenu.Trigger class="ml-4">
 					{#snippet child({ props })}
@@ -135,7 +130,7 @@
 			config={{
 				diesel_e5: { label: 'Diesel - Super', color: 'var(--chart-1)' },
 				e5_e10: { label: 'Super - Super E10', color: 'var(--chart-2)' },
-				...(showOil && {
+				...(config.showCrudeOil && {
 					diesel_crude_oil: { label: 'Diesel - Rohöl', color: 'var(--chart-3)' },
 					e5_crude_oil: { label: 'Super - Rohöl', color: 'var(--chart-4)' }
 				})
@@ -172,7 +167,7 @@
 						label: 'Super - Super E10',
 						color: 'var(--chart-2)'
 					},
-					...(showOil
+					...(config.showCrudeOil
 						? [
 								{
 									key: 'diesel_crude_oil',

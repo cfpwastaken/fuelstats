@@ -2,7 +2,7 @@
 	import * as Chart from '$lib/components/ui/chart';
 	import { LineChart } from 'layerchart';
 	import { scaleUtc } from 'd3-scale';
-	import { curveLinear } from 'd3-shape';
+	import { curveStep } from 'd3-shape';
 	import * as Card from '$lib/components/ui/card';
 	import { onMount } from 'svelte';
 	import { SvelteDate } from 'svelte/reactivity';
@@ -40,7 +40,7 @@
 		from.setDate(from.getDate() - 29);
 		const to = new SvelteDate();
 		to.setDate(to.getDate() + 1);
-		data = await fetch('api/station/' + _uuid + '/history?from=' + from.toISOString() + '&to=' + to.toISOString()).then((res) => res.json());
+		data = await fetch('/fuel/api/station/' + _uuid + '/history?from=' + from.toISOString() + '&to=' + to.toISOString()).then((res) => res.json());
 		loading = false;
 	}
 
@@ -168,7 +168,7 @@
 					yDomain={null}
 					props={{
 						spline: {
-							curve: curveLinear,
+							curve: curveStep,
 							motion: 'tween',
 							strokeWidth: 2
 						},

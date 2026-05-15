@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { browser } from "$app/environment";
 	import SectionHeader from "$lib/SectionHeader.svelte";
+	import StationGraph from "$lib/sections/station/StationGraph.svelte";
+	import StationHistory from "$lib/sections/station/StationHistory.svelte";
 	import BrandSheet from "../brand/BrandSheet.svelte";
 	import FuelPrice from "../FuelPrice.svelte";
 	import Button from "../ui/button/button.svelte";
@@ -52,6 +54,11 @@
 					<FuelPrice price={prices.e10} />
 				</ul>
 			{/await}
+
+			<div class="flex flex-col gap-4 mt-4">
+				<StationGraph uuid={data.uuid} />
+				<StationHistory uuid={data.uuid} />
+			</div>
 
 			<Button variant="secondary" class="mt-8" onclick={() => {
 				navigator.clipboard.writeText(`${location.origin}/fuel/station/${data.uuid}`);

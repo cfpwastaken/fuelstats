@@ -10,7 +10,7 @@
 	let illegalDate = $state(today(getLocalTimeZone()).subtract({ days: 1 }));
 </script>
 
-<SectionHeader id="violations">Illegale Preiserhöhungen</SectionHeader>
+<SectionHeader id="violations">Wall of Shame</SectionHeader>
 <div class="flex flex-wrap gap-4">
 	{#if browser}
 		{#await fetch('api/violations').then((res) => res.json())}
@@ -54,6 +54,7 @@
 		{/await}
 	{/if}
 </div>
+<SectionHeader id="wall-of-fame">Wall of Fame</SectionHeader>
 {#if browser}
 	{#await fetch(`api/no_increase?day=${illegalDate.toString()}`).then((res) => res.json())}
 		<span class="flex flex-1 items-center justify-center gap-2 text-lg">

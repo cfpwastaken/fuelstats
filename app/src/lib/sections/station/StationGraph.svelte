@@ -26,7 +26,7 @@
 
 	async function updateData(_uuid: string = uuid) {
 		loading = true;
-		data = await fetch('api/station/' + _uuid + '/average').then((res) => res.json());
+		data = await fetch('/fuel/api/station/' + _uuid + '/average').then((res) => res.json());
 		loading = false;
 	}
 </script>
@@ -56,9 +56,6 @@
 					diesel: { label: 'Diesel', color: 'var(--chart-1)' },
 					e5: { label: 'Super', color: 'var(--chart-2)' },
 					e10: { label: 'Super E10', color: 'var(--chart-3)' },
-					diesel_median: { label: 'Diesel Median', color: 'var(--chart-4)' },
-					e5_median: { label: 'Super Median', color: 'var(--chart-5)' },
-					e10_median: { label: 'Super E10 Median', color: 'var(--chart-3)' }
 				}}
 				class="aspect-auto h-[calc(100vh-10rem)] w-[calc(100%-2rem)] pl-2"
 			>
@@ -66,11 +63,8 @@
 					data={data.map((agg) => ({
 						hour: agg.hour,
 						diesel: agg.diesel_avg,
-						diesel_median: agg.diesel_median,
 						e5: agg.e5_avg,
-						e5_median: agg.e5_median,
 						e10: agg.e10_avg,
-						e10_median: agg.e10_median
 					}))}
 					x="hour"
 					xScale={scaleLinear()}
@@ -89,21 +83,6 @@
 						{
 							key: 'e10',
 							label: 'Super E10',
-							color: 'var(--chart-3)'
-						},
-						{
-							key: 'diesel_median',
-							label: 'Diesel Median',
-							color: 'var(--chart-1)'
-						},
-						{
-							key: 'e5_median',
-							label: 'Super Median',
-							color: 'var(--chart-2)'
-						},
-						{
-							key: 'e10_median',
-							label: 'Super E10 Median',
 							color: 'var(--chart-3)'
 						}
 					]}

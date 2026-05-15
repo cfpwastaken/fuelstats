@@ -11,8 +11,7 @@
 	import { fromDate, getLocalTimeZone, parseDate, today, type DateValue } from '@internationalized/date';
 	import { onMount } from 'svelte';
 	import type { DailyAggregation } from '$lib/types/DailyAggregations';
-	import Checkbox from '$lib/components/ui/checkbox/checkbox.svelte';
-	import Label from '$lib/components/ui/label/label.svelte';
+	import { config } from '$lib/config.svelte';
 
 	let {
 		data
@@ -32,7 +31,6 @@
 		start: today(getLocalTimeZone()).subtract({ days: 30 }),
 		end: today(getLocalTimeZone()).subtract({ days: 1 })
 	});
-	let showOil = $state(false);
 
 	onMount(() => {
 		console.log("Local timezone: " + getLocalTimeZone());
@@ -62,8 +60,6 @@
 			>Die Entwicklung der durchschnittlichen Kraftstoffpreise</Card.Description
 		>
 		<Card.Action class="flex items-center">
-			<Checkbox bind:checked={showOil} id="show-oil" />
-			<Label for="show-oil" class="ml-2">Rohöl anzeigen</Label>
 			<DropdownMenu.Root>
 				<DropdownMenu.Trigger class="ml-4">
 					{#snippet child({ props })}
@@ -118,7 +114,7 @@
 				diesel: { label: 'Diesel', color: 'var(--chart-1)' },
 				e5: { label: 'Super', color: 'var(--chart-2)' },
 				e10: { label: 'Super E10', color: 'var(--chart-3)' },
-				...(showOil && { crude_oil: { label: 'Rohöl', color: 'var(--chart-4)' } })
+				...(config.showCrudeOil && { crude_oil: { label: 'Rohöl', color: 'var(--chart-4)' } })
 			}}
  class="w-[calc(100%-2rem)] h-[calc(100%-10rem)] pl-2"
 		>
@@ -155,7 +151,7 @@
 						label: 'Super E10',
 						color: 'var(--chart-3)'
 					},
-					...(showOil
+					...(config.showCrudeOil
 						? [{
 						key: 'crude_oil',
 						label: 'Rohöl',
