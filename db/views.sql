@@ -163,7 +163,16 @@ SELECT
     location,
     first_active
 FROM stations st
-LEFT JOIN brand_map bm ON TRIM(LOWER(bm.raw_brand)) = TRIM(LOWER(st.brand)) OR TRIM(LOWER(bm.raw_brand)) = TRIM(LOWER(st.name));
+LEFT JOIN LATERAL (
+	SELECT *
+	FROM brand_map
+	WHERE lower(raw_brand) = trim(lower(st.brand))
+		OR lower(raw_brand) = trim(lower(st.name))
+	ORDER BY
+		lower(raw_brand) = trim(lower(st.brand)) DESC,
+		lower(raw_brand) = trim(lower(st.name)) DESC
+	LIMIT 1
+) bm ON true
 
 DROP MATERIALIZED VIEW IF EXISTS brand_totals CASCADE;
 
