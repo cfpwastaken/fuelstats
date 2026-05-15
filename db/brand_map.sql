@@ -17,8 +17,6 @@ AVIAXpress,AVIA
 Avia Schmidt,AVIA
 AVIA Xpress Automatentankstelle,AVIA
 jet,JET
-unknown,unknown
-,unknown
 Tankcenter,unknown
 Tankstelle,unknown
 Tankstop 24h,unknown
@@ -555,7 +553,6 @@ CLOSED,CLOSED
 nicht mehr aktiv,CLOSED
 GESCHLOSSEN,CLOSED
 gelöscht,CLOSED
-OTHER,OTHER
 cleancar ag,OTHER
 welter,OTHER
 c+c markt,OTHER
