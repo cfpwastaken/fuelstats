@@ -104,7 +104,7 @@
 					}}
 				>
 					{#snippet tooltip()}
-						<Chart.Tooltip />
+						<Chart.Tooltip labelFormatter={(label) => label + ":00"} />
 					{/snippet}
 				</LineChart>
 			</Chart.Container>
