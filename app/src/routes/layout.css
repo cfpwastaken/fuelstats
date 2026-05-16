@@ -126,6 +126,7 @@
 		@apply text-foreground;
 		background: linear-gradient(to bottom, var(--accent), var(--background));
 		background-repeat: no-repeat;
+		min-height: 100vh;
 	}
 	html {
 		@apply font-sans;
