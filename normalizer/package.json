@@ -1,0 +1,24 @@
+{
+  "name": "fuelstats-normalizer",
+  "version": "1.0.0",
+  "description": "",
+  "license": "GPL-3.0-or-later",
+  "author": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+	"build": "tsc",
+	"analyze": "node ./dist/analyze.js",
+	"diff": "node ./dist/diff.js",
+	"apply": "node ./dist/apply.js"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.1",
+    "typescript": "^6.0.3"
+  },
+  "dependencies": {
+    "csv-parse": "^6.2.1",
+    "postgres": "^3.4.9"
+  }
+}

@@ -1,0 +1,8 @@
+{
+	"postgres": {
+		"username": "INSERT USERNAME HERE",
+		"password": "INSERT PASSWORD HERE",
+		"host": "example.com",
+		"path": "/"
+	}
+}
