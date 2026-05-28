@@ -30,8 +30,8 @@ function parseConfig(config: unknown): asserts config is Config {
 		throw new Error("config.postgres.host is required and must be a string!")
 	}
 
-	if (!("path" in config.postgres) || typeof config.postgres.path != "string") {
-		throw new Error("config.postgres.path is required and must be a string!")
+	if (!("database" in config.postgres) || typeof config.postgres.database != "string") {
+		throw new Error("config.postgres.database is required and must be a string!")
 	}
 }
 
@@ -48,5 +48,5 @@ try {
 
 export default config
 
-const { username, password, host, path } = config.postgres
-export const postgresURI = `postgresql://${username}:${password}@${host}${path}`
+const { username, password, host, database } = config.postgres
+export const postgresURI = `postgresql://${username}:${password}@${host}/${database}`
