@@ -55,7 +55,10 @@ const GENERIC_ONLY = new Set([
 	"247",
 	"7",
 	"6",
-	"22"
+	"22",
+	"burger",
+	"und",
+	"city"
 ])
 
 const sql = postgres(postgresURI)
@@ -77,9 +80,13 @@ const parser = (
 
 function cleanBrand(value: string) {
 	return String(value)
+		.toLowerCase()
+		.replaceAll("ä", "ae")
+		.replaceAll("ö", "oe")
+		.replaceAll("ü", "ue")
+		.replaceAll("ß", "ss")
  		.normalize("NFKD")
 		.replace(/[\u0300-\u036f]/g, "")
-		.toLowerCase()
 		.replace(/[’'`´"]/g, "")
 		.replace(/&/g, " und ")
 		.replace(/[^a-z0-9]+/g, " ")
@@ -109,12 +116,12 @@ function normalize(brand: string) {
 	}
 
 	if (has("aral")) return "aral"
+	if (has("brzezina")) return "aral" // https://brzezina-oele.de/%C3%9Cber%20uns.html
+
 	if (has("shell")) return "shell"
 	if (has("esso")) return "esso"
-
 	if (has("totalenergies", "total")) return "totalenergies"
 	if (has("agip", "eni")) return "eni"
-
 	if (has("avia") || text.includes("aviaxpress")) return "avia"
 	if (has("bft")) return "bft"
 	if (has("jet")) return "jet"
@@ -177,8 +184,26 @@ function normalize(brand: string) {
 	if (has("eixol")) return "eixol"
 	if (has("rumag")) return "rumag"
 	if (has("winkler")) return "winkler"
+	if (has("winkler24h")) return "winkler"
 	if (has("t")) return "t"
 	if (has("pludra")) return "pludra"
+	if (has("tap")) return "tap"
+	if (has("bmoe")) return "bmö"
+	if (has("raimund")) return "raimund"
+	if (has("schonhoff")) return "schonhoff"
+	if (has("budget")) return "budgetoil"
+	if (has("dorst")) return "dorst"
+	if (has("schillhorn")) return "schillhorn"
+	if (has("tramin")) return "tramin"
+	if (has("hmh")) return "hmh"
+	if (has("svg")) return "svg"
+	if (has("argos")) return "argos"
+	if (has("walther")) return "walther"
+	if (has("koen")) return "koen-plambeck"
+	if (has("plambeck")) return "koen-plambeck"
+	if (has("cleancar")) return "cleancar"
+	if (has("ec") && has("rolfes")) return "ec-rolfes"
+	if (has("herm")) return "herm"
 	
 	if (startsWith("k k") || contains("klaas und kock")) return "k+k"
 
@@ -206,13 +231,14 @@ function normalize(brand: string) {
 	if (startsWith("v markt", "v-markt") || text.includes(" v markt")) return "supermarkt-tankstelle"
 	if (startsWith("e center", "e-center") || text.includes(" e center")) return "supermarkt-tankstelle"
 
-	if (text.includes("oil!")) return "oil!"
+	if (brand.includes("OIL!")) return "oil!"
 
 	if (has("sb")) return "sb"
 	if (has("ld")) return "ld"
 
 	if (contains("tankpool24")) return "tankpool24"
 	if (contains("bavaria petrol")) return "bavaria petrol"
+	if (contains("c und s")) return "c&s"
 
 	if ([...words].some(w => SUPERMARKET_MARKERS.has(w))) {
 		return "supermarkt-tankstelle"
