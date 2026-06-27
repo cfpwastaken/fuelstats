@@ -1,9 +1,19 @@
-import fs from "node:fs/promises"
-import postgres from "postgres"
+import fs from "node:fs"
+import { Pool } from "pg"
 import { postgresURI } from "./config.js"
+import { pipeline } from "node:stream/promises"
+import { from } from "pg-copy-streams"
 
-const sql = postgres(postgresURI)
+const pool = new Pool({ connectionString: postgresURI })
+const sql = await pool.connect()
 
-const queries = await fs.readFile("./generated/queries.sql", { encoding: "utf-8" })
+await sql.query("TRUNCATE TABLE brand_map;");
 
-await sql.unsafe(queries)
+const stream = sql.query(from("COPY brand_map (raw_brand, normalized) FROM stdin WITH (FORMAT csv)"));
+const brandMap = fs.createReadStream("./generated/table.csv");
+await pipeline(
+	brandMap,
+	stream
+);
+sql.release()
+await pool.end()

@@ -342,7 +342,7 @@ function normalizeKey(value: string) {
 	return String(value).trim().toLowerCase()
 }
 
-function buildQueries(map: BrandMap) {
+function buildTable(map: BrandMap) {
 	const mapping = []
 
 	for (const [brand, entry] of map.entries()) {
@@ -370,18 +370,20 @@ function buildQueries(map: BrandMap) {
 	const valuesSql = deduped
 		.map(
 			(row) =>
-				`${quoteString(row.rawBrand)}, ${escapeSqlLiteral(row.representative)}`
+				`${quoteString(row.rawBrand)},${escapeSqlLiteral(row.representative)}`
 		)
 		.join("\n")
 
-	const sql = `
+	return valuesSql;
+}
+
+function buildTableSQL(csv: string) {
+	return `
 TRUNCATE TABLE brand_map;
 COPY brand_map (raw_brand, normalized) FROM stdin WITH (FORMAT csv)
-${valuesSql}
+${csv}
 \\.
-`.trim()
-
-	return sql
+`.trim();
 }
 
 await fs.mkdir("./generated", { recursive: true })
@@ -394,7 +396,9 @@ aggregateOther(map)
 console.log("map size:", map.size, "full:", fullSize)
 await fs.writeFile("./generated/brands.csv", "brand,count,list\n" + printBrands(map) + "\n")
 
-const queries = buildQueries(map)
-await fs.writeFile("./generated/queries.sql", queries + "\n")
+const brandMap = buildTable(map)
+await fs.writeFile("./generated/table.csv", brandMap + "\n")
+const tableSQL = buildTableSQL(brandMap)
+await fs.writeFile("./generated/queries.sql", tableSQL + "\n")
 
 sql.end()
