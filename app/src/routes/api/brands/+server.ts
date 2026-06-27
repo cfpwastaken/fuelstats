@@ -1,10 +1,45 @@
 import { db } from "$lib/db.server";
 import { json } from "@sveltejs/kit";
 
-const query = "SELECT brand, COUNT(*) AS count FROM normalized_stations GROUP BY brand ORDER BY count DESC";
-const queryPostcode = "SELECT brand, COUNT(*) AS count FROM normalized_stations WHERE post_code = $1 GROUP BY brand ORDER BY count DESC";
-const queryCity = "SELECT brand, COUNT(*) AS count FROM normalized_stations WHERE city ILIKE $1 GROUP BY brand ORDER BY count DESC";
-const queryCityPostcode = "SELECT brand, COUNT(*) AS count FROM normalized_stations WHERE city ILIKE $1 AND post_code = $2 GROUP BY brand ORDER BY count DESC";
+const query = `SELECT
+	ns.brand,
+	COUNT(*) AS count,
+	COALESCE(bv.violation_count, 0) AS violations,
+	COALESCE(bv.total_fees, 0) AS fines
+FROM normalized_stations ns
+LEFT JOIN brand_violations bv ON ns.brand = bv.brand
+GROUP BY ns.brand, bv.violation_count, bv.total_fees
+ORDER BY count DESC`;
+const queryPostcode = `SELECT
+	ns.brand,
+	COUNT(*) AS count,
+	COALESCE(bv.violation_count, 0) AS violations,
+	COALESCE(bv.total_fees, 0) AS fines
+FROM normalized_stations ns
+LEFT JOIN brand_violations bv ON ns.brand = bv.brand
+WHERE ns.post_code = $1
+GROUP BY ns.brand, bv.violation_count, bv.total_fees
+ORDER BY count DESC`;
+const queryCity = `SELECT
+	ns.brand,
+	COUNT(*) AS count,
+	COALESCE(bv.violation_count, 0) AS violations,
+	COALESCE(bv.total_fees, 0) AS fines
+FROM normalized_stations ns
+LEFT JOIN brand_violations bv ON ns.brand = bv.brand
+WHERE ns.city ILIKE $1
+GROUP BY ns.brand, bv.violation_count, bv.total_fees
+ORDER BY count DESC`;
+const queryCityPostcode = `SELECT
+	ns.brand,
+	COUNT(*) AS count,
+	COALESCE(bv.violation_count, 0) AS violations,
+	COALESCE(bv.total_fees, 0) AS fines
+FROM normalized_stations ns
+LEFT JOIN brand_violations bv ON ns.brand = bv.brand
+WHERE ns.city ILIKE $1 AND ns.post_code = $2
+GROUP BY ns.brand, bv.violation_count, bv.total_fees
+ORDER BY count DESC`;
 
 export async function GET({ request }) {
 	if(!db) {
