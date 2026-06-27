@@ -6,6 +6,7 @@
 	import { getLocalTimeZone, today } from '@internationalized/date';
 	import ViolationStats from './ViolationStats.svelte';
 	import ViolationDateSwitcher from './ViolationDateSwitcher.svelte';
+	import CityRanking from './CityRanking.svelte';
 
 	let illegalDate = $state(today(getLocalTimeZone()).subtract({ days: 1 }));
 </script>
@@ -65,3 +66,4 @@
 		<ViolatorsList {violators} type="no_increase" date={illegalDate} />
 	{/await}
 {/if}
+<CityRanking />

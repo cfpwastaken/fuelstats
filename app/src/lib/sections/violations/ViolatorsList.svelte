@@ -47,6 +47,11 @@
 			type: "no_increase";
 			date: CalendarDate;
 			violators: NoIncrease[];
+		}
+		| {
+			type: "best";
+			date: CalendarDate;
+			violators: NoIncrease[];
 		};
 
 	let props: Props = $props();
@@ -89,6 +94,8 @@
 		<Card.Description class="text-xl">
 			{#if props.type == "no_increase"}
 				Tankstellen ohne Preiserhöhung
+			{:else if props.type == "best"}
+				Tankstellen mit den besten Preisen
 			{:else}
 				Illegale Preiserhöher ({props.type === 'brands' ? 'Marken' : 'Tankstellen'})
 			{/if}
@@ -96,7 +103,8 @@
 		<Card.Title
 			class="flex items-center gap-4 text-5xl font-semibold tabular-nums @[250px]/card:text-3xl"
 		>
-			Top {props.type === "brands" ? "10": "5"}
+			Top {props.type === "brands" || props.type === "best" ? "10": "5"}
+			{#if props.type != "best"}
 			<Select.Root type="single" bind:value={violationType}>
 				<Select.Trigger class="p-5 text-2xl">
 					{#if violationType == "diesel"}
@@ -131,8 +139,9 @@
 					</Select.Group>
 				</Select.Content>
 			</Select.Root>
+			{/if}
 		</Card.Title>
-		{#if props.type != "no_increase"}
+		{#if props.type != "no_increase" && props.type != "best"}
 			<Card.Action>
 				<Badge variant="outline" class="flex gap-2 p-3 text-lg">
 					<CoinsIcon style="width: 1.25rem !important; height: 1.25rem !important;" />
@@ -148,7 +157,13 @@
 	<Card.Content>
 		{#if !props.violators || props.violators.length === 0}
 			<div class="flex h-[calc(100vh-10rem)] w-[calc(100%-2rem)] items-center justify-center">
-				<span class="text-lg">Keine Daten</span>
+				<span class="text-lg">
+					{#if props.type === "best"}
+						Tragen Sie Ihre Postleitzahl oder Stadt in den Einstellungen ein, um die besten Tankstellen in Ihrer Nähe zu sehen.
+					{:else}
+						Keine Daten
+					{/if}
+				</span>
 			</div>
 		{:else}
 			<div class="flex flex-col gap-4">
@@ -276,8 +291,9 @@
 							</div>
 						</div>
 					{/each}
-				{:else if props.type == "no_increase"}
+				{:else if props.type == "no_increase" || props.type == "best"}
 					{@const filteredViolators = props.violators.filter((v) => {
+						if (props.type === "best") return true;
 						if (config.postCodeFilter && v.post_code != config.postCodeFilter) return false;
 						if (config.cityFilter && v.city?.toLowerCase() != config.cityFilter.toLowerCase()) return false;
 						return true;
@@ -285,15 +301,17 @@
 					<!-- eslint-disable-next-line svelte/require-each-key -->
 					{#each filteredViolators
 						.filter((v) => {
+							if (props.type === "best") return true;
 							const vDate = new Date(v.day);
 							return (vDate.getFullYear() === props.date.year &&
 								vDate.getMonth() + 1 === props.date.month &&
 								vDate.getDate() === props.date.day)
 						})
 						.filter((v) => {
+							if (props.type === "best") return true;
 							return v.fuel_type === violationType;
 						})
-						.slice(0, 5) as violator, i}
+						.slice(0, props.type === "best" ? 10 : 5) as violator, i}
 						<div class="flex flex-col">
 							<div class="flex items-center gap-4">
 								<span class="text-2xl">{i + 1}.</span>

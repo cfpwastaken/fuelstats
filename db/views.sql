@@ -464,3 +464,77 @@ LEFT JOIN normalized_stations st ON st.uuid = station_uuid
 GROUP BY day, station_uuid, fuel_type, st.name, st.brand, st.street, st.house_number, st.post_code, st.city
 HAVING MAX(diff) <= 0 OR MAX(diff) IS NULL
 ORDER BY day, station_uuid, fuel_type;
+
+DROP MATERIALIZED VIEW IF EXISTS city_station_rank CASCADE;
+
+CREATE MATERIALIZED VIEW city_station_rank AS
+WITH stats AS (
+    SELECT
+        st.city,
+        st.uuid,
+        st.name,
+        st.street,
+        AVG(h.diesel) AS diesel_avg,
+        AVG(h.e5) AS e5_avg,
+        AVG(h.e10) AS e10_avg
+    FROM normalized_stations st
+    JOIN history h ON h.station_uuid = st.uuid
+    WHERE h.timestamp >= NOW() - INTERVAL '7 days'
+    GROUP BY st.city, st.uuid, st.name, st.street
+),
+unpivot AS (
+    SELECT city, uuid, name, street, 'diesel' AS fuel_type, diesel_avg AS price_avg FROM stats
+    UNION ALL
+    SELECT city, uuid, name, street, 'e5'     AS fuel_type, e5_avg     AS price_avg FROM stats
+    UNION ALL
+    SELECT city, uuid, name, street, 'e10'    AS fuel_type, e10_avg    AS price_avg FROM stats
+),
+ranked AS (
+    SELECT *,
+        ROW_NUMBER() OVER (
+            PARTITION BY city, fuel_type
+            ORDER BY price_avg ASC
+        ) AS rn
+    FROM unpivot
+)
+SELECT *
+FROM ranked
+WHERE rn <= 10
+ORDER BY rn;
+
+DROP MATERIALIZED VIEW IF EXISTS plz_station_rank CASCADE;
+
+CREATE MATERIALIZED VIEW plz_station_rank AS
+WITH stats AS (
+    SELECT
+        st.city,
+        st.uuid,
+        st.name,
+        st.post_code,
+        AVG(h.diesel) AS diesel_avg,
+        AVG(h.e5) AS e5_avg,
+        AVG(h.e10) AS e10_avg
+    FROM normalized_stations st
+    JOIN history h ON h.station_uuid = st.uuid
+    WHERE h.timestamp >= NOW() - INTERVAL '7 days'
+    GROUP BY st.city, st.uuid, st.name, st.post_code
+),
+unpivot AS (
+    SELECT city, uuid, name, post_code, 'diesel' AS fuel_type, diesel_avg AS price_avg FROM stats
+    UNION ALL
+    SELECT city, uuid, name, post_code, 'e5'     AS fuel_type, e5_avg     AS price_avg FROM stats
+    UNION ALL
+    SELECT city, uuid, name, post_code, 'e10'    AS fuel_type, e10_avg    AS price_avg FROM stats
+),
+ranked AS (
+    SELECT *,
+        ROW_NUMBER() OVER (
+            PARTITION BY city, fuel_type
+            ORDER BY price_avg ASC
+        ) AS rn
+    FROM unpivot
+)
+SELECT *
+FROM ranked
+WHERE rn <= 10
+ORDER BY rn;
