@@ -154,14 +154,16 @@ DROP MATERIALIZED VIEW IF EXISTS normalized_stations CASCADE;
 CREATE MATERIALIZED VIEW normalized_stations AS
 SELECT
     uuid,
-    name,
+    st.name AS name,
 		COALESCE(bm.normalized, st.brand) AS brand,
     street,
     house_number,
     post_code,
     city,
     location,
-    first_active
+    first_active,
+		p.state AS state,
+		p.region AS region
 FROM stations st
 LEFT JOIN LATERAL (
 	SELECT *
@@ -173,6 +175,7 @@ LEFT JOIN LATERAL (
 		lower(raw_brand) = trim(lower(st.name)) DESC
 	LIMIT 1
 ) bm ON true
+LEFT JOIN postcodes p ON p.postcode = st.post_code
 
 DROP MATERIALIZED VIEW IF EXISTS brand_totals CASCADE;
 

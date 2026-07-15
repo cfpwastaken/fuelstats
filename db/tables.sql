@@ -43,3 +43,11 @@ create table crude_oil
     usd_barrel numeric,
     eur_liter  numeric generated always as (((usd_barrel * 0.85) / 158.987)) stored
 );
+
+CREATE TABLE postcodes (
+    postcode VARCHAR,
+    name VARCHAR,
+    state VARCHAR,
+    region VARCHAR,
+    osm_id INTEGER
+);
